@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lift Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Reset ───────────────────────────────────────── */
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Tokens ──────────────────────────────────────── */
+
+        :root {
+            --bg: #ffffff;
+            --bg2: #f4f6fb;
+            --bg3: #e8edf5;
+            --ink: #0f172a;
+            --ink2: #334155;
+            --ink3: #64748b;
+            --border: rgba(15, 23, 42, 0.08);
+            --accent: #4f46e5;
+            --accent-2: #7c3aed;
+            --accent-3: #0ea5e9;
+            --pr: #d97706;
+            --pr-bg: #fef3c7;
+            --success: #059669;
+            --success-bg: #d1fae5;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --radius: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+            --shadow: 0 8px 32px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-lg: 0 20px 60px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --bg2: #161b27;
+            --bg3: #1e2638;
+            --ink: #f1f5f9;
+            --ink2: #cbd5e1;
+            --ink3: #64748b;
+            --border: rgba(148, 163, 184, 0.12);
+            --accent: #818cf8;
+            --accent-2: #a78bfa;
+            --accent-3: #38bdf8;
+            --pr: #fbbf24;
+            --pr-bg: #2d2007;
+            --success: #34d399;
+            --success-bg: #052e16;
+            --danger: #f87171;
+            --danger-bg: #3f121b;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.16);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.32), 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ── Base ────────────────────────────────────────── */
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+            line-height: 1.6;
+            background:
+                radial-gradient(ellipse 90% 50% at 15% -5%, rgba(99, 102, 241, 0.15) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 45% at 85% 95%, rgba(14, 165, 233, 0.1) 0%, transparent 55%),
+                radial-gradient(ellipse 55% 55% at 50% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 65%),
+                #eef2ff;
+            background-attachment: fixed;
+        }
+
+        [data-theme="dark"] body {
+            background:
+                radial-gradient(ellipse 90% 50% at 15% -5%, rgba(99, 102, 241, 0.22) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 45% at 85% 95%, rgba(14, 165, 233, 0.14) 0%, transparent 55%),
+                radial-gradient(ellipse 55% 55% at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 65%),
+                #070c18;
+            background-attachment: fixed;
+        }
+
+        /* ── Layout ──────────────────────────────────────── */
+
+        .app {
+            max-width: 760px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 20px 48px;
+        }
+
+        /* ── Header ──────────────────────────────────────── */
+
+        header {
+            padding: 16px 20px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 16px;
+            z-index: 10;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+        }
+
+        [data-theme="dark"] header {
+            background: rgba(13, 17, 23, 0.8);
+            border-color: rgba(255, 255, 255, 0.07);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .logo svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+            margin-bottom: 2px;
+        }
+
+        .app-tagline {
+            font-size: 0.8rem;
+            color: var(--ink3);
+            max-width: 320px;
+            line-height: 1.4;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--ink2);
+            font-size: 15px;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .15s, background .15s, color .15s;
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px) scale(1.08);
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+        }
+
+        /* ── Hero panel ──────────────────────────────────── */
+
+        .hero-panel {
+            margin-top: 16px;
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(14, 165, 233, 0.07));
+            border: 1px solid rgba(99, 102, 241, 0.18);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        [data-theme="dark"] .hero-panel {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(14, 165, 233, 0.1));
+            border-color: rgba(129, 140, 248, 0.2);
+        }
+
+        .hero-panel p {
+            margin: 0;
+            color: var(--ink2);
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+
+        .hero-panel strong {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        /* ── Nav tabs ────────────────────────────────────── */
+
+        nav {
+            display: flex;
+            gap: 8px;
+            padding: 14px 0 2px;
+            background: transparent;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 11px 14px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--ink3);
+            cursor: pointer;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1), color .15s, background .15s, border-color .15s, box-shadow .15s;
+            letter-spacing: 0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            backdrop-filter: blur(8px);
+        }
+
+        [data-theme="dark"] .tab-btn {
+            background: rgba(22, 27, 39, 0.7);
+        }
+
+        .tab-btn[aria-selected="true"] {
+            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+
+        .tab-btn:hover:not([aria-selected="true"]) {
+            color: var(--ink);
+            background: var(--bg);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .tab-icon {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        /* ── Views ───────────────────────────────────────── */
+
+        .view {
+            display: none;
+            padding: 18px 0;
+            flex: 1;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* ── Stat cards ──────────────────────────────────── */
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            min-height: 108px;
+            position: relative;
+            overflow: hidden;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .15s;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), var(--accent-3)); }
+        .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+        .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-3), var(--success)); }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--ink3);
+            margin-bottom: 4px;
+        }
+
+        .stat-val {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--ink);
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .stat-sub {
+            font-size: 0.7rem;
+            color: var(--ink3);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        /* ── Section cards ───────────────────────────────── */
+
+        .section-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--ink3);
+            margin-bottom: 18px;
+        }
+
+        .section-title-icon {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(124,58,237,0.1));
+            font-size: 0.85rem;
+            border: 1px solid rgba(99,102,241,0.15);
+        }
+
+        /* ── Week grid ───────────────────────────────────── */
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .day-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .day-name {
+            font-size: 0.65rem;
+            color: var(--ink3);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .day-dot {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--bg2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            color: var(--ink3);
+            font-weight: 600;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s, box-shadow .2s;
+        }
+
+        .day-dot.trained {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-color: transparent;
+            color: white;
+            font-size: 0.9rem;
+            transform: scale(1.06);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.5);
+        }
+
+        .day-dot.today-ring {
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 700;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        /* ── Log form ────────────────────────────────────── */
+
+        .log-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip-btn {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 5px 12px;
+            font-size: 0.77rem;
+            font-weight: 500;
+            color: var(--ink2);
+            cursor: pointer;
+            transition: background .12s, color .12s, border-color .12s, transform .15s;
+        }
+
+        .chip-btn:hover {
+            background: var(--bg3);
+            color: var(--ink);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .chip-btn.selected {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ink3);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 13px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--ink);
+            background: var(--bg2);
+            width: 100%;
+            transition: border-color .15s, background .15s, box-shadow .15s;
+            outline: none;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            background: var(--bg);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+
+        [data-theme="dark"] input:focus {
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        .form-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .error-msg {
+            font-size: 0.78rem;
+            color: var(--danger);
+            min-height: 18px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 13px 20px;
+            font-size: 0.92rem;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .15s, opacity .15s;
+            letter-spacing: 0.01em;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left .4s ease;
+        }
+
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 12px 32px rgba(79, 70, 229, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        /* ── Today's session ─────────────────────────────── */
+
+        .exercise-group {
+            margin-bottom: 18px;
+        }
+
+        .exercise-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .ex-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        .ex-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+        }
+
+        .ex-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pr-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--pr-bg), rgba(253, 224, 71, 0.2));
+            color: var(--pr);
+            border-radius: 100px;
+            padding: 3px 9px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: 1px solid rgba(217, 119, 6, 0.3);
+        }
+
+        .vs-badge {
+            font-size: 0.73rem;
+            font-weight: 600;
+            padding: 2px 9px;
+            border-radius: 100px;
+        }
+
+        .vs-up {
+            color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .vs-dn {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        .vs-eq {
+            color: var(--ink3);
+            background: var(--bg2);
+        }
+
+        .set-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .set-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 10px;
+            border-radius: 10px;
+            transition: background .1s;
+            animation: fadeIn .18s ease;
+        }
+
+        .set-row:hover {
+            background: var(--bg2);
+        }
+
+        .set-num {
+            font-size: 0.68rem;
+            color: var(--ink3);
+            width: 16px;
+            flex-shrink: 0;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .set-main {
+            flex: 1;
+        }
+
+        .set-detail {
+            font-size: 0.9rem;
+            color: var(--ink);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .set-e1rm {
+            font-size: 0.7rem;
+            color: var(--ink3);
+            margin-top: 1px;
+        }
+
+        .set-pr-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pr), #f59e0b);
+            flex-shrink: 0;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+        }
+
+        .btn-del {
+            background: none;
+            border: none;
+            color: var(--ink3);
+            opacity: 0.3;
+            cursor: pointer;
+            padding: 4px 6px;
+            font-size: 1rem;
+            border-radius: 6px;
+            transition: color .12s, opacity .12s, background .12s;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .set-row:hover .btn-del {
+            opacity: 1;
+        }
+
+        .btn-del:hover {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        /* ── Empty state ─────────────────────────────────── */
+
+        .empty {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--ink3);
+            background: var(--bg2);
+            border: 1.5px dashed var(--border);
+            border-radius: var(--radius);
+        }
+
+        .empty-icon {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: block;
+            filter: grayscale(0.3);
+        }
+
+        .empty p {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* ── Volume chart ────────────────────────────────── */
+
+        .vol-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .vol-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .vol-label {
+            font-size: 0.77rem;
+            font-weight: 500;
+            color: var(--ink2);
+            width: 110px;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vol-track {
+            flex: 1;
+            height: 8px;
+            background: var(--bg2);
+            border-radius: 100px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .vol-fill {
+            height: 100%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            transition: width .5s cubic-bezier(.4,0,.2,1);
+        }
+
+        .vol-amt {
+            font-size: 0.75rem;
+            color: var(--ink2);
+            width: 58px;
+            text-align: right;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        /* ── PR list ─────────────────────────────────────── */
+
+        .pr-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pr-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            transition: background .1s;
+        }
+
+        .pr-row:last-child {
+            border-bottom: none;
+        }
+
+        .pr-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pr-rank {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--ink3);
+            width: 18px;
+            flex-shrink: 0;
+        }
+
+        .pr-ex-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .pr-ex-date {
+            font-size: 0.7rem;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        .pr-right {
+            text-align: right;
+        }
+
+        .pr-weight {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ink);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pr-e1rm {
+            font-size: 0.7rem;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* ── History ─────────────────────────────────────── */
+
+        .history-session {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-session:last-child {
+            border-bottom: none;
+        }
+
+        .history-date {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 3px;
+            letter-spacing: -0.01em;
+        }
+
+        .history-meta {
+            font-size: 0.72rem;
+            color: var(--ink3);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .history-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .history-chip {
+            font-size: 0.72rem;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 3px 10px;
+            color: var(--ink2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+            font-weight: 500;
+        }
+
+        .history-chip.is-pr {
+            background: var(--pr-bg);
+            border-color: rgba(217, 119, 6, 0.4);
+            color: var(--pr);
+            font-weight: 600;
+        }
+
+        /* ── Reset section ───────────────────────────────── */
+
+        .reset-section {
+            margin-top: 6px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .reset-section p {
+            font-size: 0.8rem;
+            color: var(--ink3);
+            margin-bottom: 10px;
+        }
+
+        .btn-danger {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            font-size: 0.82rem;
+            font-family: inherit;
+            color: var(--ink3);
+            cursor: pointer;
+            transition: all .15s;
+            font-weight: 500;
+        }
+
+        .btn-danger:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        .btn-danger-confirm {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger);
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            font-size: 0.82rem;
+            font-family: inherit;
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity .15s;
+            margin-left: 8px;
+        }
+
+        .btn-danger-confirm:hover {
+            opacity: .8;
+        }
+
+        .btn-cancel {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            font-size: 0.82rem;
+            font-family: inherit;
+            color: var(--ink3);
+            cursor: pointer;
+        }
+
+        .confirm-row {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .confirm-row.show {
+            display: flex;
+        }
+
+        .confirm-row p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--ink2);
+        }
+
+        /* ── Animations ──────────────────────────────────── */
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        /* ── Mobile ──────────────────────────────────────── */
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-3col {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-3col .field:last-child {
+                grid-column: 1 / -1;
+            }
+            header {
+                padding: 14px 16px;
+            }
+            .view {
+                padding: 12px 0;
+            }
+            .tab-btn {
+                padding: 10px 8px;
+                font-size: 0.78rem;
+                gap: 4px;
+            }
+            .tab-icon {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app" id="app">
+
+        <header>
+            <div class="header-left">
+                <div class="logo" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M6 12h12"/></svg>
+                </div>
+                <div>
+                    <h1>Lift Tracker</h1>
+                    <p class="app-tagline">PRs, volume & weekly momentum.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-icon" id="btn-theme" aria-label="Toggle dark mode" title="Toggle dark mode">☀</button>
+            </div>
+        </header>
+
+        <div class="hero-panel">
+            <p><strong>Quick tip:</strong> Press <strong>n</strong> anytime to jump to the log form. Track progress in real time, then switch to PRs or history to review your best lifts.</p>
+        </div>
+
+        <nav role="tablist" aria-label="App sections">
+            <button class="tab-btn" role="tab" aria-selected="true" data-tab="log">
+                <span class="tab-icon">✍️</span> Log
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="prs">
+                <span class="tab-icon">🏆</span> PRs
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="history">
+                <span class="tab-icon">🕒</span> History
+            </button>
+        </nav>
+
+        <main>
+
+            <!-- ── LOG VIEW ──────────────────────────────────── -->
+            <section class="view active" id="view-log" role="tabpanel" aria-label="Log a set">
+
+                <div class="stats-row" id="stats-row" aria-live="polite"></div>
+
+                <div class="section-card">
+                    <div class="section-title"><span class="section-title-icon">📅</span>This week</div>
+                    <div class="week-grid" id="week-grid" aria-label="Training days this week"></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title"><span class="section-title-icon">✍️</span>Log a set</div>
+                    <form class="log-form" id="log-form" novalidate>
+                        <div class="field">
+                            <label for="f-exercise">Exercise</label>
+                            <input type="text" id="f-exercise" name="exercise" placeholder="Back squat, bench press…" list="exercise-datalist" autocomplete="off" required />
+                            <datalist id="exercise-datalist"></datalist>
+                        </div>
+
+                        <div class="quick-chips" id="quick-chips" role="group" aria-label="Quick-pick exercises"></div>
+
+                        <div class="form-3col">
+                            <div class="field">
+                                <label for="f-weight">Weight (kg)</label>
+                                <input type="number" id="f-weight" name="weight" placeholder="60" min="0" step="0.5" />
+                            </div>
+                            <div class="field">
+                                <label for="f-reps">Reps</label>
+                                <input type="number" id="f-reps" name="reps" placeholder="8" min="1" step="1" />
+                            </div>
+                            <div class="field">
+                                <label for="f-sets">Sets</label>
+                                <input type="number" id="f-sets" name="sets" placeholder="3" min="1" step="1" value="1" />
+                            </div>
+                        </div>
+
+                        <div class="error-msg" id="form-error" role="alert" aria-live="assertive"></div>
+
+                        <button type="submit" class="btn-primary">Log set</button>
+                    </form>
+                </div>
+
+                <div class="section-card" id="today-card">
+                    <div class="section-title"><span class="section-title-icon">🏋️</span>Today's session</div>
+                    <div id="today-sets" aria-live="polite"></div>
+                </div>
+
+                <div class="reset-section">
+                    <p>Want to start fresh? This clears all logged sets permanently.</p>
+                    <button class="btn-danger" id="btn-reset-trigger">Clear all data</button>
+                    <div class="confirm-row" id="confirm-row">
+                        <p>Are you sure? This cannot be undone.</p>
+                        <button class="btn-danger-confirm" id="btn-reset-confirm">Yes, clear everything</button>
+                        <button class="btn-cancel" id="btn-reset-cancel">Cancel</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ── PRs VIEW ───────────────────────────────────── -->
+            <section class="view" id="view-prs" role="tabpanel" aria-label="Personal records">
+
+                <div class="section-card">
+                    <div class="section-title"><span class="section-title-icon">📊</span>Volume by exercise</div>
+                    <div id="vol-chart" aria-label="Volume bar chart"></div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title"><span class="section-title-icon">🏆</span>Personal records</div>
+                    <div class="pr-list" id="pr-list" aria-live="polite"></div>
+                </div>
+
+            </section>
+
+            <!-- ── HISTORY VIEW ───────────────────────────────── -->
+            <section class="view" id="view-history" role="tabpanel" aria-label="Session history">
+
+                <div class="section-card">
+                    <div class="section-title"><span class="section-title-icon">🕒</span>All sessions</div>
+                    <div id="history-list" aria-live="polite"></div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // ── Constants ──────────────────────────────────────────────────────
+        const STORAGE_KEY = 'lifttracker_v1';
+        const QUICK_LIST = [
+            'Back squat', 'Bench press', 'Deadlift', 'Overhead press',
+            'Hip thrust', 'Romanian DL', 'Pull-up', 'Barbell row',
+            'Leg press', 'Lateral raise', 'Bicep curl', 'Tricep pushdown'
+        ];
+
+        // ── State ──────────────────────────────────────────────────────────
+        let state = {
+            sets: []
+        };
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) state = JSON.parse(raw);
+                if (!Array.isArray(state.sets)) state = {
+                    sets: []
+                };
+            } catch (e) {
+                state = {
+                    sets: []
+                };
+            }
+        }
+
+        // ── Utility ────────────────────────────────────────────────────────
+        function todayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function fmtDate(str) {
+            // Parse as local date to avoid UTC off-by-one
+            const [y, m, d] = str.split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function fmtVol(v) {
+            return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v.toFixed(0);
+        }
+
+        // Epley estimated 1RM. When reps === 1, returns weight directly.
+        function e1rm(weight, reps) {
+            if (reps === 1) return weight;
+            return Math.round(weight * (1 + reps / 30) * 10) / 10;
+        }
+
+        // ── Derived calculations ───────────────────────────────────────────
+
+        // Returns map: exerciseKey → { exercise, weight, reps, e1rm, date }
+        function getPRs() {
+            const prs = {};
+            for (const s of state.sets) {
+                const key = s.exercise.trim().toLowerCase();
+                const val = e1rm(s.weight, s.reps);
+                if (!prs[key] || val > prs[key].e1rm) {
+                    prs[key] = {
+                        exercise: s.exercise,
+                        weight: s.weight,
+                        reps: s.reps,
+                        e1rm: val,
+                        date: s.date
+                    };
+                }
+            }
+            return prs;
+        }
+
+        // Is this specific set a PR (its e1rm is the highest ever for this exercise)?
+        function isSetPR(set) {
+            const key = set.exercise.trim().toLowerCase();
+            const val = e1rm(set.weight, set.reps);
+            for (const s of state.sets) {
+                if (s.exercise.trim().toLowerCase() === key && s.id !== set.id) {
+                    if (e1rm(s.weight, s.reps) > val) return false;
+                }
+            }
+            return true;
+        }
+
+        // Returns the sets from the most recent session for a given exercise before a given date
+        function lastSession(exercise, beforeDate) {
+            const key = exercise.trim().toLowerCase();
+            const prev = state.sets.filter(s => s.exercise.trim().toLowerCase() === key && s.date < beforeDate);
+            if (!prev.length) return null;
+            const dates = [...new Set(prev.map(s => s.date))].sort().reverse();
+            return prev.filter(s => s.date === dates[0]);
+        }
+
+        // ── Render helpers ─────────────────────────────────────────────────
+
+        function renderStats() {
+            const today = todayStr();
+            const now = new Date();
+            const weekDay = now.getDay(); // 0 = Sunday
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - weekDay);
+            const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth()+1).padStart(2,'0')}-${String(weekStart.getDate()).padStart(2,'0')}`;
+
+            const todaySets = state.sets.filter(s => s.date === today);
+            const weekSets = state.sets.filter(s => s.date >= weekStartStr);
+            const weekDays = new Set(weekSets.map(s => s.date)).size;
+            const weekVolume = weekSets.reduce((acc, s) => acc + s.weight * s.reps * s.setsCount, 0);
+
+            document.getElementById('stats-row').innerHTML = `
+      <div class="stat-card">
+        <span class="stat-icon">⚡</span>
+        <div class="stat-label">Today</div>
+        <div class="stat-val">${todaySets.length}</div>
+        <div class="stat-sub">sets logged</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📆</span>
+        <div class="stat-label">This week</div>
+        <div class="stat-val">${weekDays}</div>
+        <div class="stat-sub">days trained</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🔥</span>
+        <div class="stat-label">Week volume</div>
+        <div class="stat-val">${fmtVol(weekVolume)}</div>
+        <div class="stat-sub">kg lifted</div>
+      </div>
+    `;
+        }
+
+        function renderWeekGrid() {
+            const now = new Date();
+            const todayStr2 = todayStr();
+            const weekDay = now.getDay();
+            const trained = new Set(state.sets.map(s => s.date));
+            const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            let html = '';
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - weekDay + i);
+                const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const isTrained = trained.has(ds);
+                const isToday = ds === todayStr2;
+                let dotClass = 'day-dot';
+                if (isTrained) dotClass += ' trained';
+                else if (isToday) dotClass += ' today-ring';
+
+                html += `<div class="day-cell">
+        <span class="day-name" aria-hidden="true">${days[i]}</span>
+        <div class="${dotClass}" aria-label="${days[i]} ${isTrained ? 'trained' : isToday ? 'today' : ''}">${isTrained ? '✓' : d.getDate()}</div>
+      </div>`;
+            }
+
+            document.getElementById('week-grid').innerHTML = html;
+        }
+
+        function renderQuickChips() {
+            // Recent exercises first, then fill with defaults
+            const recent = [...new Set(state.sets.map(s => s.exercise))].slice(-5).reverse();
+            const rest = QUICK_LIST.filter(e => !recent.map(r => r.toLowerCase()).includes(e.toLowerCase()));
+            const chips = [...recent, ...rest].slice(0, 10);
+
+            // Autocomplete datalist
+            const allEx = [...new Set([...state.sets.map(s => s.exercise), ...QUICK_LIST])];
+            document.getElementById('exercise-datalist').innerHTML = allEx.map(n => `<option value="${n}">`).join('');
+
+            const currentEx = document.getElementById('f-exercise').value.trim().toLowerCase();
+            document.getElementById('quick-chips').innerHTML = chips.map(c => {
+                const sel = c.toLowerCase() === currentEx ? ' selected' : '';
+                return `<button type="button" class="chip-btn${sel}" data-exercise="${c}">${c}</button>`;
+            }).join('');
+
+            document.querySelectorAll('.chip-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('f-exercise').value = btn.dataset.exercise;
+                    document.getElementById('f-weight').focus();
+                    // Update selected chip highlight
+                    document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+            });
+        }
+
+        function renderToday() {
+            const today = todayStr();
+            const todaySets = state.sets.filter(s => s.date === today);
+            const el = document.getElementById('today-sets');
+
+            if (!todaySets.length) {
+                el.innerHTML = `<div class="empty">
+        <div class="empty-icon" aria-hidden="true">🏋️</div>
+        <p>Nothing logged yet today. Add your first set above.</p>
+      </div>`;
+                return;
+            }
+
+            // Group by exercise (preserve first-logged order)
+            const order = [];
+            const groups = {};
+            for (const s of todaySets) {
+                const key = s.exercise;
+                if (!groups[key]) {
+                    groups[key] = [];
+                    order.push(key);
+                }
+                groups[key].push(s);
+            }
+
+            let html = '';
+            for (const ex of order) {
+                const sets = groups[ex];
+                const hasPR = sets.some(s => isSetPR(s));
+                const prev = lastSession(ex, today);
+                const todayMax = Math.max(...sets.map(s => s.weight));
+
+                let vsHtml = '';
+                if (prev) {
+                    const prevMax = Math.max(...prev.map(s => s.weight));
+                    const diff = todayMax - prevMax;
+                    if (diff > 0) vsHtml = `<span class="vs-badge vs-up" aria-label="Up ${diff}kg from last time">+${diff}kg</span>`;
+                    else if (diff < 0) vsHtml = `<span class="vs-badge vs-dn" aria-label="Down ${Math.abs(diff)}kg from last time">${diff}kg</span>`;
+                    else vsHtml = `<span class="vs-badge vs-eq" aria-label="Same as last time">same</span>`;
+                } else {
+                    vsHtml = `<span class="vs-badge vs-eq" aria-label="First time logging this">first time</span>`;
+                }
+
+                html += `<div class="exercise-group">
+        <div class="ex-header">
+          <div class="ex-name">${ex}</div>
+          <div class="ex-meta">
+            ${hasPR ? '<span class="pr-badge" aria-label="Personal record">⭐ PR</span>' : ''}
+            ${vsHtml}
+          </div>
+        </div>
+        <div class="set-list">`;
+
+                sets.forEach((s, i) => {
+                    const pr = isSetPR(s);
+                    const e1 = e1rm(s.weight, s.reps);
+                    html += `<div class="set-row" role="listitem">
+          <span class="set-num" aria-hidden="true">${i + 1}</span>
+          <div class="set-main">
+            <div class="set-detail">${s.setsCount}×${s.reps} @ ${s.weight}kg</div>
+            <div class="set-e1rm">est. 1RM ${e1}kg</div>
+          </div>
+          ${pr ? '<div class="set-pr-dot" aria-label="Personal record" title="PR"></div>' : ''}
+          <button class="btn-del" data-id="${s.id}" aria-label="Delete this set">×</button>
+        </div>`;
+                });
+
+                html += '</div></div>';
+            }
+
+            el.innerHTML = html;
+
+            // Delete handlers
+            el.querySelectorAll('[data-id]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.sets = state.sets.filter(s => s.id !== btn.dataset.id);
+                    saveState();
+                    renderAll();
+                });
+            });
+        }
+
+        function renderPRs() {
+            // Volume chart
+            const vol = {};
+            for (const s of state.sets) {
+                const k = s.exercise;
+                vol[k] = (vol[k] || 0) + s.weight * s.reps * s.setsCount;
+            }
+            const volKeys = Object.keys(vol).sort((a, b) => vol[b] - vol[a]).slice(0, 8);
+            const volEl = document.getElementById('vol-chart');
+
+            if (!volKeys.length) {
+                volEl.innerHTML = '<div class="empty"><p>No data yet. Log some sets to see volume.</p></div>';
+            } else {
+                const maxVol = vol[volKeys[0]];
+                volEl.innerHTML = volKeys.map(k => `
+        <div class="vol-row">
+          <div class="vol-label" title="${k}">${k}</div>
+          <div class="vol-track">
+            <div class="vol-fill" style="width:${((vol[k] / maxVol) * 100).toFixed(1)}%"></div>
+          </div>
+          <div class="vol-amt">${fmtVol(vol[k])}kg</div>
+        </div>`).join('');
+            }
+
+            // PR list
+            const prs = getPRs();
+            const prKeys = Object.keys(prs).sort((a, b) => prs[b].e1rm - prs[a].e1rm);
+            const prEl = document.getElementById('pr-list');
+
+            if (!prKeys.length) {
+                prEl.innerHTML = '<div class="empty"><p>No PRs yet. Start logging to track your bests.</p></div>';
+            } else {
+                prEl.innerHTML = prKeys.map((k, idx) => {
+                    const p = prs[k];
+                    return `<div class="pr-row">
+          <div class="pr-left">
+            <div class="pr-rank">${idx + 1}</div>
+            <div>
+              <div class="pr-ex-name">${p.exercise}</div>
+              <div class="pr-ex-date">${fmtDate(p.date)}</div>
+            </div>
+          </div>
+          <div class="pr-right">
+            <div class="pr-weight">${p.weight}kg × ${p.reps}</div>
+            <div class="pr-e1rm">est. 1RM ${p.e1rm}kg</div>
+          </div>
+        </div>`;
+                }).join('');
+            }
+        }
+
+        function renderHistory() {
+            const el = document.getElementById('history-list');
+
+            if (!state.sets.length) {
+                el.innerHTML = '<div class="empty"><p>No sessions logged yet.</p></div>';
+                return;
+            }
+
+            // Group by date
+            const byDate = {};
+            for (const s of state.sets) {
+                if (!byDate[s.date]) byDate[s.date] = [];
+                byDate[s.date].push(s);
+            }
+            const dates = Object.keys(byDate).sort().reverse();
+
+            el.innerHTML = dates.map(d => {
+                const sets = byDate[d];
+                const exs = [...new Set(sets.map(s => s.exercise))];
+                const volume = sets.reduce((acc, s) => acc + s.weight * s.reps * s.setsCount, 0);
+                const chips = sets.map(s => {
+                    const pr = isSetPR(s);
+                    return `<span class="history-chip${pr ? ' is-pr' : ''}" title="${s.exercise} ${s.setsCount}×${s.reps}@${s.weight}kg${pr ? ' — PR' : ''}">${s.exercise} ${s.setsCount}×${s.reps}@${s.weight}</span>`;
+                }).join('');
+
+                return `<div class="history-session">
+        <div class="history-date">${fmtDate(d)}</div>
+        <div class="history-meta">${exs.length} exercise${exs.length !== 1 ? 's' : ''} · ${fmtVol(volume)}kg total volume</div>
+        <div class="history-chips">${chips}</div>
+      </div>`;
+            }).join('');
+        }
+
+        function renderAll() {
+            renderStats();
+            renderWeekGrid();
+            renderQuickChips();
+            renderToday();
+            renderPRs();
+            renderHistory();
+        }
+
+        // ── Tab navigation ─────────────────────────────────────────────────
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.setAttribute('aria-selected', 'false'));
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                btn.setAttribute('aria-selected', 'true');
+                document.getElementById('view-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ── Log form ───────────────────────────────────────────────────────
+        document.getElementById('log-form').addEventListener('submit', e => {
+            e.preventDefault();
+
+            const exercise = document.getElementById('f-exercise').value.trim();
+            const weight = parseFloat(document.getElementById('f-weight').value);
+            const reps = parseInt(document.getElementById('f-reps').value, 10);
+            const setsVal = parseInt(document.getElementById('f-sets').value, 10) || 1;
+            const errEl = document.getElementById('form-error');
+
+            if (!exercise) {
+                errEl.textContent = 'Enter an exercise name.';
+                return;
+            }
+            if (isNaN(weight) || weight <= 0) {
+                errEl.textContent = 'Enter a valid weight greater than 0.';
+                return;
+            }
+            if (isNaN(reps) || reps < 1) {
+                errEl.textContent = 'Enter at least 1 rep.';
+                return;
+            }
+            errEl.textContent = '';
+
+            state.sets.push({
+                id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+                exercise,
+                weight,
+                reps,
+                setsCount: setsVal,
+                date: todayStr()
+            });
+
+            // Clear number fields; keep exercise for re-logging
+            document.getElementById('f-weight').value = '';
+            document.getElementById('f-reps').value = '';
+            document.getElementById('f-sets').value = '1';
+            document.getElementById('f-weight').focus();
+
+            saveState();
+            renderAll();
+        });
+
+        // ── Keyboard: Enter anywhere in form triggers submit ───────────────
+        ['f-exercise', 'f-weight', 'f-reps', 'f-sets'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', ev => {
+                if (ev.key === 'Enter') document.getElementById('log-form').requestSubmit();
+            });
+        });
+
+        // ── Reset flow ─────────────────────────────────────────────────────
+        document.getElementById('btn-reset-trigger').addEventListener('click', () => {
+            document.getElementById('confirm-row').classList.add('show');
+            document.getElementById('btn-reset-trigger').style.display = 'none';
+        });
+
+        document.getElementById('btn-reset-cancel').addEventListener('click', () => {
+            document.getElementById('confirm-row').classList.remove('show');
+            document.getElementById('btn-reset-trigger').style.display = '';
+        });
+
+        document.getElementById('btn-reset-confirm').addEventListener('click', () => {
+            state = {
+                sets: []
+            };
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (e) {}
+            document.getElementById('confirm-row').classList.remove('show');
+            document.getElementById('btn-reset-trigger').style.display = '';
+            // Clear form fields too
+            document.getElementById('f-exercise').value = '';
+            document.getElementById('f-weight').value = '';
+            document.getElementById('f-reps').value = '';
+            document.getElementById('f-sets').value = '1';
+            document.getElementById('form-error').textContent = '';
+            renderAll();
+        });
+
+        // ── Dark mode toggle ───────────────────────────────────────────────
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('btn-theme').textContent = theme === 'dark' ? '☀' : '☾';
+            try {
+                localStorage.setItem('lifttracker_theme', theme);
+            } catch (e) {}
+        }
+
+        document.getElementById('btn-theme').addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        });
+
+        // ── Keyboard shortcut: N focuses exercise input ────────────────────
+        document.addEventListener('keydown', ev => {
+            if (ev.key === 'n' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                ev.preventDefault();
+                // Switch to Log tab
+                document.querySelectorAll('.tab-btn').forEach(b => b.setAttribute('aria-selected', 'false'));
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.querySelector('[data-tab="log"]').setAttribute('aria-selected', 'true');
+                document.getElementById('view-log').classList.add('active');
+                document.getElementById('f-exercise').focus();
+            }
+        });
+
+        // ── Init ───────────────────────────────────────────────────────────
+        loadState();
+
+        // Restore theme preference
+        try {
+            const savedTheme = localStorage.getItem('lifttracker_theme');
+            if (savedTheme) applyTheme(savedTheme);
+        } catch (e) {}
+
+        renderAll();
+    </script>
+
+</body>
+
+</html>
