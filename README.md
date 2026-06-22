@@ -18,6 +18,7 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 - **Volume chart** — total volume per exercise across all time
 - **Session history** — every past workout with volume totals and PR-highlighted chips
 - **Edit, undo, redo & export** — correct today's entry, undo or redo a deletion, or download the active profile's workout history as a CSV
+- **Workout library** — choose strength, cardio, bodyweight, Pilates, barre, yoga, or mobility activities from a tidy dropdown
 - **Workout routines** — start built-in Back & biceps, Lower body, Push day, or Full body routines, or save your own; each logged exercise advances to the next editable entry
 - **Recovery check-ins** — track sleep, readiness, and daily water intake
 - **Body progress** — log bodyweight and measurements, set a bodyweight target, and see an in-browser trend chart

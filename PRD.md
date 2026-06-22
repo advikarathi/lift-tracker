@@ -47,7 +47,8 @@ Lifters who train consistently need to remember what they did last session to ma
 ### Log a set (Interaction types: text input, number input, button click, keyboard Enter, datalist autocomplete)
 - Exercise field: free text with `<datalist>` autocomplete from previously used exercises + a built-in list of common lifts
 - Quick-pick chips: up to 20 common exercises plus datalist autocomplete
-- Activity types: strength, cardio, and bodyweight; the form shows the relevant fields
+- Activity types: strength, cardio, bodyweight, Pilates, barre, yoga, and mobility; the form shows the relevant strength, distance, rep, or duration fields.
+- Exercise choices are kept in a filtered dropdown/library rather than displayed as a large home-screen list.
 - Weight (kg): number input, step 0.5
 - Reps: number input, step 1, min 1
 - Sets: number input, step 1, min 1, defaults to 1

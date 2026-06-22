@@ -1396,7 +1396,15 @@
                                 <option value="strength">Strength</option>
                                 <option value="cardio">Cardio</option>
                                 <option value="bodyweight">Bodyweight</option>
+                                <option value="pilates">Pilates</option>
+                                <option value="barre">Barre</option>
+                                <option value="yoga">Yoga</option>
+                                <option value="mobility">Mobility</option>
                             </select>
+                        </div>
+                        <div class="field">
+                            <label for="f-exercise-picker">Exercise library</label>
+                            <select id="f-exercise-picker" aria-label="Choose a common exercise"></select>
                         </div>
                         <div class="field">
                             <label for="f-exercise">Exercise / activity</label>
@@ -1404,7 +1412,6 @@
                             <datalist id="exercise-datalist"></datalist>
                         </div>
 
-                        <div class="quick-chips" id="quick-chips" role="group" aria-label="Quick-pick exercises"></div>
                         <div id="routine-status" class="progress-summary hidden" aria-live="polite"></div>
 
                         <div class="form-3col">
@@ -1423,11 +1430,11 @@
                         </div>
 
                         <div class="form-3col">
-                            <div class="field hidden field-cardio" id="field-distance">
+                            <div class="field hidden field-distance" id="field-distance">
                                 <label for="f-distance">Distance (km)</label>
                                 <input type="number" id="f-distance" name="distance" placeholder="5" min="0" step="0.1" />
                             </div>
-                            <div class="field hidden field-cardio" id="field-duration">
+                            <div class="field hidden field-duration" id="field-duration">
                                 <label for="f-duration">Duration (min)</label>
                                 <input type="number" id="f-duration" name="duration" placeholder="30" min="0" step="1" />
                             </div>
@@ -1566,6 +1573,15 @@
             'Lat pulldown', 'Seated cable row', 'Face pull', 'Hammer curl',
             'Incline dumbbell press', 'Chest fly', 'Dumbbell shoulder press', 'Cable crunch'
         ];
+        const EXERCISE_LIBRARY = {
+            strength: QUICK_LIST,
+            cardio: ['Run', 'Walk', 'Cycling', 'Rowing', 'Elliptical', 'Stair climber', 'Swimming'],
+            bodyweight: ['Push-up', 'Pull-up', 'Bodyweight squat', 'Lunge', 'Glute bridge', 'Plank', 'Mountain climber'],
+            pilates: ['Mat Pilates', 'Reformer Pilates', 'Pilates core flow', 'Pilates lower body', 'Pilates mobility'],
+            barre: ['Barre full body', 'Barre lower body', 'Barre arms', 'Barre core', 'Barre cardio'],
+            yoga: ['Vinyasa yoga', 'Hatha yoga', 'Power yoga', 'Yin yoga', 'Restorative yoga'],
+            mobility: ['Full-body mobility', 'Hip mobility', 'Shoulder mobility', 'Lower-body stretch', 'Recovery walk']
+        };
         const STARTER_ROUTINES = [
             { name: 'Back & biceps', exercises: ['Lat pulldown', 'Seated cable row', 'Face pull', 'Bicep curl', 'Hammer curl'] },
             { name: 'Lower body', exercises: ['Back squat', 'Romanian DL', 'Leg press', 'Leg curl', 'Calf raise'] },
@@ -1699,11 +1715,13 @@
             if (entry.entryType === 'cardio') {
                 return (entry.distance || 0) * (entry.duration || 0);
             }
+            if (entry.entryType !== 'strength') return 0;
             return (entry.weight || 0) * (entry.reps || 0) * (entry.setsCount || 1);
         }
 
         function getEntryPerformance(entry) {
             if (entry.entryType === 'cardio') return entry.distance || 0;
+            if (['pilates', 'barre', 'yoga', 'mobility'].includes(entry.entryType)) return entry.duration || 0;
             return entry.weight || 0;
         }
 
@@ -1739,7 +1757,7 @@
         function getPRs() {
             const prs = {};
             for (const s of getActiveEntries()) {
-                if (s.entryType === 'cardio') continue;
+                if (s.entryType !== 'strength') continue;
                 const key = s.exercise.trim().toLowerCase();
                 const val = e1rm(s.weight, s.reps);
                 if (!prs[key] || val > prs[key].e1rm) {
@@ -1757,11 +1775,11 @@
 
         // Is this specific set a PR (its e1rm is the highest ever for this exercise)?
         function isSetPR(set) {
-            if (set.entryType === 'cardio') return false;
+            if (set.entryType !== 'strength') return false;
             const key = set.exercise.trim().toLowerCase();
             const val = e1rm(set.weight, set.reps);
             for (const s of getActiveEntries()) {
-                if (s.exercise.trim().toLowerCase() === key && s.id !== set.id && s.entryType !== 'cardio') {
+                if (s.exercise.trim().toLowerCase() === key && s.id !== set.id && s.entryType === 'strength') {
                     if (e1rm(s.weight, s.reps) > val) return false;
                 }
             }
@@ -1843,30 +1861,19 @@
         }
 
         function renderQuickChips() {
-            // Recent exercises first, then fill with defaults
+            const type = document.getElementById('f-entry-type').value;
+            const choices = EXERCISE_LIBRARY[type] || QUICK_LIST;
             const recent = [...new Set(getActiveEntries().map(s => s.exercise))].slice(-5).reverse();
-            const rest = QUICK_LIST.filter(e => !recent.map(r => r.toLowerCase()).includes(e.toLowerCase()));
-            const chips = [...recent, ...rest].slice(0, 20);
-
-            // Autocomplete datalist
-            const allEx = [...new Set([...getActiveEntries().map(s => s.exercise), ...QUICK_LIST])];
-            document.getElementById('exercise-datalist').innerHTML = allEx.map(n => `<option value="${n}">`).join('');
-
-            const currentEx = document.getElementById('f-exercise').value.trim().toLowerCase();
-            document.getElementById('quick-chips').innerHTML = chips.map(c => {
-                const sel = c.toLowerCase() === currentEx ? ' selected' : '';
-                return `<button type="button" class="chip-btn${sel}" data-exercise="${c}">${c}</button>`;
-            }).join('');
-
-            document.querySelectorAll('.chip-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('f-exercise').value = btn.dataset.exercise;
-                    document.getElementById('f-weight').focus();
-                    // Update selected chip highlight
-                    document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                });
-            });
+            const allEx = [...new Set([...recent, ...Object.values(EXERCISE_LIBRARY).flat()])];
+            document.getElementById('exercise-datalist').innerHTML = allEx.map(name => `<option value="${name}">`).join('');
+            const picker = document.getElementById('f-exercise-picker');
+            picker.innerHTML = `<option value="">Choose a ${type} activity…</option>${choices.map(name => `<option value="${name}">${name}</option>`).join('')}`;
+            picker.value = choices.includes(document.getElementById('f-exercise').value) ? document.getElementById('f-exercise').value : '';
+            picker.onchange = () => {
+                if (!picker.value) return;
+                document.getElementById('f-exercise').value = picker.value;
+                document.getElementById(type === 'strength' ? 'f-weight' : type === 'bodyweight' ? 'f-reps' : 'f-duration').focus();
+            };
         }
 
         function computeStreak() {
@@ -1963,6 +1970,7 @@
             document.getElementById('btn-log-submit').textContent = 'Save changes';
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
             updateFormFieldsByType();
+            renderQuickChips();
             document.getElementById('f-exercise').focus();
         }
 
@@ -1973,6 +1981,7 @@
             document.getElementById('log-form').reset();
             document.getElementById('f-sets').value = '1';
             updateFormFieldsByType();
+            renderQuickChips();
         }
 
         function renderToday() {
@@ -2015,10 +2024,12 @@
                         if (diff > 0) vsHtml = `<span class="vs-badge vs-up" aria-label="More distance than last time">+${diff.toFixed(1)}km</span>`;
                         else if (diff < 0) vsHtml = `<span class="vs-badge vs-dn" aria-label="Less distance than last time">${diff.toFixed(1)}km</span>`;
                         else vsHtml = `<span class="vs-badge vs-eq" aria-label="Same distance as last time">same</span>`;
-                    } else {
+                    } else if (sets[0].entryType === 'strength') {
                         if (diff > 0) vsHtml = `<span class="vs-badge vs-up" aria-label="Up ${diff}kg from last time">+${diff}kg</span>`;
                         else if (diff < 0) vsHtml = `<span class="vs-badge vs-dn" aria-label="Down ${Math.abs(diff)}kg from last time">${diff}kg</span>`;
                         else vsHtml = `<span class="vs-badge vs-eq" aria-label="Same as last time">same</span>`;
+                    } else {
+                        vsHtml = `<span class="vs-badge vs-eq" aria-label="Activity logged">logged</span>`;
                     }
                 } else {
                     vsHtml = `<span class="vs-badge vs-eq" aria-label="First time logging this">first time</span>`;
@@ -2036,12 +2047,14 @@
 
                 sets.forEach((s, i) => {
                             const pr = isSetPR(s);
-                            const e1 = s.entryType === 'cardio' ? null : e1rm(s.weight, s.reps);
+                            const e1 = s.entryType === 'strength' ? e1rm(s.weight, s.reps) : null;
                             let detail = '';
                             if (s.entryType === 'cardio') {
                                 detail = `${s.distance || 0}km in ${s.duration || 0}min`;
                             } else if (s.entryType === 'bodyweight') {
                                 detail = `${s.setsCount}×${s.reps} bodyweight`;
+                            } else if (['pilates', 'barre', 'yoga', 'mobility'].includes(s.entryType)) {
+                                detail = `${s.duration || 0} min ${s.entryType}`;
                             } else {
                                 detail = `${s.setsCount}×${s.reps} @ ${s.weight}kg`;
                             }
@@ -2195,6 +2208,8 @@
                         label = `${s.exercise} ${s.distance || 0}km ${s.duration || 0}m`;
                     } else if (s.entryType === 'bodyweight') {
                         label = `${s.exercise} ${s.setsCount}×${s.reps}`;
+                    } else if (['pilates', 'barre', 'yoga', 'mobility'].includes(s.entryType)) {
+                        label = `${s.exercise} ${s.duration || 0}m`;
                     } else {
                         label = `${s.exercise} ${s.setsCount}×${s.reps}@${s.weight}kg`;
                     }
@@ -2250,6 +2265,7 @@
             document.getElementById('f-reps').value = '';
             document.getElementById('f-sets').value = '1';
             updateFormFieldsByType();
+            renderQuickChips();
             renderRoutineStatus();
             document.getElementById('f-weight').focus();
         }
@@ -2303,11 +2319,13 @@
 
         function updateFormFieldsByType() {
             const type = document.getElementById('f-entry-type').value;
-            document.querySelectorAll('.field-cardio').forEach(el => el.classList.toggle('hidden', type !== 'cardio'));
+            const isTimed = ['cardio', 'pilates', 'barre', 'yoga', 'mobility'].includes(type);
+            document.querySelectorAll('.field-distance').forEach(el => el.classList.toggle('hidden', type !== 'cardio'));
+            document.querySelectorAll('.field-duration').forEach(el => el.classList.toggle('hidden', !isTimed));
             document.getElementById('field-weight').classList.toggle('hidden', type !== 'strength');
             document.getElementById('field-bodyweight-note').classList.toggle('hidden', type !== 'bodyweight');
-            document.getElementById('field-reps').classList.toggle('hidden', type === 'cardio');
-            document.getElementById('field-sets').classList.toggle('hidden', type === 'cardio');
+            document.getElementById('field-reps').classList.toggle('hidden', type !== 'strength' && type !== 'bodyweight');
+            document.getElementById('field-sets').classList.toggle('hidden', type !== 'strength' && type !== 'bodyweight');
         }
 
         function renderAll() {
@@ -2327,7 +2345,10 @@
             updateFormFieldsByType();
         }
 
-        document.getElementById('f-entry-type').addEventListener('change', updateFormFieldsByType);
+        document.getElementById('f-entry-type').addEventListener('change', () => {
+            updateFormFieldsByType();
+            renderQuickChips();
+        });
         document.getElementById('btn-cancel-edit').addEventListener('click', cancelEditingEntry);
         document.getElementById('btn-export-csv').addEventListener('click', () => {
             const columns = ['date', 'activity_type', 'exercise', 'weight_kg', 'reps', 'sets', 'distance_km', 'duration_min'];
@@ -2478,6 +2499,11 @@
                     errEl.textContent = 'Enter a valid duration greater than 0.';
                     return;
                 }
+            } else if (['pilates', 'barre', 'yoga', 'mobility'].includes(entryType)) {
+                if (isNaN(duration) || duration <= 0) {
+                    errEl.textContent = 'Enter a valid duration greater than 0.';
+                    return;
+                }
             }
 
             errEl.textContent = '';
@@ -2488,10 +2514,10 @@
                 entryType,
                 exercise,
                 weight: entryType === 'strength' ? weight : 0,
-                reps: entryType === 'cardio' ? 0 : reps,
-                setsCount: entryType === 'cardio' ? 1 : setsVal,
+                reps: entryType === 'strength' || entryType === 'bodyweight' ? reps : 0,
+                setsCount: entryType === 'strength' || entryType === 'bodyweight' ? setsVal : 1,
                 distance: entryType === 'cardio' ? distance : 0,
-                duration: entryType === 'cardio' ? duration : 0,
+                duration: entryType === 'cardio' || ['pilates', 'barre', 'yoga', 'mobility'].includes(entryType) ? duration : 0,
                 date: todayStr()
             };
             if (editingEntryId) {
