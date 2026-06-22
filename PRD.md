@@ -1,7 +1,7 @@
 # PRD.md — Lift Tracker
 
 ## Overview
-A static, self-contained lifting log built with vanilla JavaScript. Users log sets by exercise with weight and reps, and the tool computes derived output — estimated 1RMs, personal records, weekly training volume, and session-over-session deltas — from a single persisted state array. No account, no server, no app install.
+A static, self-contained fitness tracker built with vanilla JavaScript. Users log strength, cardio, and bodyweight activity, then the tool computes PRs, training volume, streaks, recovery cues, and progress insights from persisted browser state. No account, server, API, or app install.
 
 ---
 
@@ -16,7 +16,7 @@ Lifters who train consistently need to remember what they did last session to ma
 
 | Goal | Success metric |
 |------|----------------|
-| Log a set in under 15 seconds | ≤4 fields, quick-pick chips for common exercises |
+| Log an activity quickly | Activity-aware fields, 20 quick-picks, and reusable routines |
 | Know immediately if a set is a PR | PR badge appears on set row after logging |
 | Compare against last session | Delta shown inline (e.g. "+5kg vs last time") |
 | See training consistency at a glance | Weekly dot tracker on main screen |
@@ -37,6 +37,8 @@ Lifters who train consistently need to remember what they did last session to ma
 8. As a lifter, I want to delete a mistakenly logged set without clearing the whole session.
 9. As a lifter, I want my data to persist across browser sessions.
 10. As a lifter, I want to reset everything cleanly when I want to start fresh.
+11. As a lifter, I want to repeat a familiar routine while choosing today's weights and reps.
+12. As a lifter, I want to export my workout data and track recovery and bodyweight privately.
 
 ---
 
@@ -44,11 +46,12 @@ Lifters who train consistently need to remember what they did last session to ma
 
 ### Log a set (Interaction types: text input, number input, button click, keyboard Enter, datalist autocomplete)
 - Exercise field: free text with `<datalist>` autocomplete from previously used exercises + a built-in list of common lifts
-- Quick-pick chips: 8 common exercises shown as tappable buttons that populate the exercise field
+- Quick-pick chips: up to 20 common exercises plus datalist autocomplete
+- Activity types: strength, cardio, and bodyweight; the form shows the relevant fields
 - Weight (kg): number input, step 0.5
 - Reps: number input, step 1, min 1
 - Sets: number input, step 1, min 1, defaults to 1
-- On submit: appends to state array, clears weight/reps/sets fields (keeps exercise for easy re-logging), triggers full re-render
+- On submit: adds or edits an entry, clears the relevant fields, and advances an active routine to its next exercise
 - Validation: exercise name required, weight > 0, reps ≥ 1; inline error message, no alert() boxes
 
 ### Today's session panel (derived output — updates on every state change)
@@ -56,7 +59,7 @@ Lifters who train consistently need to remember what they did last session to ma
 - Per exercise: list of sets with set number, sets×reps@weight, estimated 1RM
 - PR badge on any set that beats the previous best estimated 1RM for that exercise (across all time)
 - vs-last-session delta: compares today's max weight for the exercise to last session's max weight (+Xkg / −Xkg / same / first time)
-- Delete button on each set row
+- Edit and delete buttons on each set row, with one-step undo/redo for deletions
 
 ### Weekly dot tracker (derived output)
 - 7 dots for Sun–Sat of the current week
@@ -78,11 +81,18 @@ Lifters who train consistently need to remember what they did last session to ma
 ### Session history — "History" tab (derived output)
 - Every past training day, newest first
 - Each day: date, exercises trained, total volume, chips for each set (PR chips highlighted)
+- CSV export downloads the active profile's workout entries without a network request
+
+### Offline extensions
+- Profiles can save reusable routines as named, comma-separated exercise lists. Built-in Back & biceps, Lower body, Push day, and Full body routines are available; logging the current exercise advances to the next one.
+- Daily recovery check-in stores sleep hours, readiness (1–5), and water intake for the active profile and current date.
+- Progress view stores same-day bodyweight, waist, and chest measurements, shows a bodyweight trend, and compares the latest bodyweight to an optional target and date.
+- Training coach is rule-based and fully local: it reacts to today’s entries, sleep, readiness, and streak. It makes no network request and does not claim to be AI.
 
 ### Reset
 - "Clear all data" button in the Log tab footer
 - Confirmation step: requires clicking a second "Yes, clear everything" button that appears inline (no modal, no alert)
-- On confirm: clears state array, removes localStorage key, re-renders to empty state
+- On confirm: clears the active profile's entries, routines, recovery check-ins, measurements, and metric goal; other profiles remain intact
 
 ---
 
@@ -90,20 +100,25 @@ Lifters who train consistently need to remember what they did last session to ma
 
 ```javascript
 const state = {
-  sets: [
+  activeProfileId: "default",
+  profiles: [{ id: "default", name: "Default profile", goals: {}, metricGoal: {} }],
+  entries: [
     {
       id: "1718123456789",      // Date.now().toString()
       exercise: "Back squat",
       weight: 80,               // kg
       reps: 5,
       setsCount: 3,             // how many sets this entry represents
-      date: "2025-06-17"        // YYYY-MM-DD, local date
+      date: "2025-06-17",       // YYYY-MM-DD, local date
+      profileId: "default",
+      entryType: "strength"
     }
-  ]
+  ],
+  templates: [], recovery: [], measurements: []
 };
 ```
 
-All derived values — PRs, weekly volume, session groups, deltas — are computed fresh from `state.sets` on every render. No derived data is stored.
+All derived values — PRs, weekly volume, session groups, deltas, streaks, and goal status — are computed fresh from persisted entries and profile data on every render.
 
 ---
 
@@ -112,7 +127,7 @@ All derived values — PRs, weekly volume, session groups, deltas — are comput
 2. **Form / text input** — exercise name field with datalist autocomplete
 3. **Number input** — weight, reps, sets
 4. **Keyboard** — Enter on any field submits the form; exercises autocomplete via datalist
-5. **Dropdown/tab** — three-tab navigation (Log, PRs, History)
+5. **Dropdown/tab** — four-tab navigation (Log, PRs, History, Progress)
 
 ---
 
@@ -143,13 +158,13 @@ Every piece of data shown beyond the raw logged values is computed:
 - Two sets with equal e1RM in same session: both marked as PR (tied)
 - Very long exercise name: truncated with ellipsis in history chips
 - Reset with no data: button still works, no errors
+- Routine exercises can be edited before logging; ending a routine keeps previously logged entries
+- Empty CSV export still downloads a header row
 
 ---
 
 ## Out of Scope (for MP2)
-- Planned workouts / templates
 - Rest timer
-- Body weight tracking
 - Multiple weight units (lbs) — kg only for now
-- Export to CSV or clipboard (would be an extension)
-- Charts of strength over time (history view shows raw sessions)
+- Progress photos, nutrition logging, wearable sync, community features, notifications, and payments
+- Any external AI service, API call, account system, or backend

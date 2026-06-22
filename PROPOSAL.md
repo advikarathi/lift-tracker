@@ -1,28 +1,31 @@
 # PROPOSAL.md
 
 ## What I'm building
-A personal lifting tracker that logs sets, reps, and weight for each exercise, auto-detects personal records, and shows weekly volume and progress over time — all in the browser with no app or account required.
+A personal, offline fitness tracker that logs strength, cardio, and bodyweight activity; supports reusable routines; and turns the saved data into PRs, recovery, and progress insights without an account or server.
 
 ## Who it's for / why
 For me (Advika). I lift regularly combining weightlifting and Pilates, and I keep losing track of what weight I used last session for a given exercise. I want to know: did I hit a PR today? Am I lifting more than last week? What's my estimated 1RM on squat right now? My Notes app doesn't compute any of that — this tool does.
 
 ## The state it tracks
-- Every set ever logged: exercise name, weight (kg), reps, sets count, and date
-- Derived from that single array: today's session, per-exercise PRs (by estimated 1RM), weekly volume (kg lifted), days trained this week, and a comparison against the last session for each exercise
+- Profile-scoped workout entries: activity type, exercise, strength/cardio details, and date
+- Saved routines, daily recovery check-ins, body measurements, measurable bodyweight goals, theme preference, and a temporary undo/redo action
+- Derived output: today's session, per-exercise PRs, strength volume, streak, last-session comparison, goal progress, and rule-based training guidance
 
 ## Core features
-1. Log a set: exercise name (with quick-pick chips for common lifts), weight, reps, sets count
+1. Log strength, cardio, or bodyweight work with quick-picks and a built-in exercise library
 2. Auto-detect PRs using the Epley estimated 1RM formula (weight × (1 + reps/30)) — badge the set if it's a new record
 3. Show today's session grouped by exercise, with a vs-last-session delta (+kg / −kg / same)
 4. PR board: every exercise ranked by best estimated 1RM, with date achieved
-5. Session history: every past workout by date with volume totals
-6. Weekly dot tracker showing which days you trained
-7. Reset / clear all data with a confirmation step
-8. localStorage so data survives closing the tab
+5. Save and run reusable routines, including built-in Back & biceps, Lower body, Push day, and Full body options
+6. Track recovery, hydration, body measurements, and a bodyweight target in a dedicated Progress view
+7. Edit entries, undo/redo a deletion, export a profile's workouts as CSV, and reset an active profile safely
+8. Persist all profile data and theme preference with localStorage
 
 ## What I don't know yet
 - How to implement the Epley formula correctly and use it consistently for PR detection
 - How to group and sort past sessions from a flat array without a database
 - How to make a datalist autocomplete feel good for exercise names
 - How to handle the edge case where reps = 1 in the 1RM formula
-- How to structure the reset so it clears localStorage AND resets the UI in one action
+- How to structure a profile-safe reset that clears the right saved data and refreshes the UI in one action
+- How to migrate older localStorage data safely as the state shape grows
+- How to generate a browser-only CSV download without a server

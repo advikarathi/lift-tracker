@@ -1,6 +1,6 @@
 # Lift Tracker
 
-A personal lifting log that auto-detects PRs, shows session-over-session deltas, and tracks weekly volume — all in the browser with no app, no account, and no install.
+A personal, offline fitness tracker that auto-detects PRs, supports repeatable routines, and turns training and recovery data into useful progress insights — all in the browser with no app, no account, and no install.
 
 **Live site:** [advikarathi.github.io/lift-tracker](https://advikarathi.github.io/lift-tracker)
 **Repo:** [github.com/advikarathi/lift-tracker](https://github.com/advikarathi/lift-tracker)
@@ -17,6 +17,11 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 - **PR board** — every exercise ranked by estimated 1RM, with date achieved
 - **Volume chart** — total volume per exercise across all time
 - **Session history** — every past workout with volume totals and PR-highlighted chips
+- **Edit, undo, redo & export** — correct today's entry, undo or redo a deletion, or download the active profile's workout history as a CSV
+- **Workout routines** — start built-in Back & biceps, Lower body, Push day, or Full body routines, or save your own; each logged exercise advances to the next editable entry
+- **Recovery check-ins** — track sleep, readiness, and daily water intake
+- **Body progress** — log bodyweight and measurements, set a bodyweight target, and see an in-browser trend chart
+- **Training coach** — offline, rule-based guidance derived only from your own workout and recovery data
 - **Dark mode toggle** — persists your preference
 - **localStorage** — data survives closing the tab
 
@@ -26,10 +31,13 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 
 1. Type an exercise name (or tap a quick-pick chip), enter weight/reps/sets, hit **Log set** (or press Enter)
 2. Watch your session build — PRs are badged automatically, deltas show vs. your last session
-3. Tap **PRs** to see your board and volume breakdown
-4. Tap **History** to see every past session
-5. **Clear all data** at the bottom resets everything with a confirmation step
-6. Press **N** from anywhere to jump to the log form
+3. Start a built-in or saved routine; after each entry, the next exercise pre-fills while you choose today's weight, reps, and sets
+4. Tap **PRs** to see your board and volume breakdown
+5. Tap **Progress** to log body measurements and review your goal and trend
+6. Tap **History** to see every past session
+7. Use **Export CSV** in History to save your active profile's workout data
+8. **Clear all data** at the bottom resets the active profile with a confirmation step
+9. Press **N** from anywhere to jump to the log form
 
 ---
 
@@ -39,11 +47,11 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 |---|---|
 | Semantic HTML | `<header>`, `<nav>`, `<main>`, `<section>`, `role` attributes, `aria-label` throughout |
 | Intentional CSS | Custom property token system, dark mode, responsive grid, animations on new set rows |
-| JavaScript state | Single `state.sets` array read and written by every interaction |
-| Derived output | PRs, 1RM estimates, weekly volume, vs-last-session delta — all computed from state |
+| JavaScript state | Profile-scoped workout, routine, recovery, and measurement data read and written by interactions |
+| Derived output | PRs, 1RM estimates, strength volume, vs-last-session delta, streaks, and goal progress — all computed from state |
 | 3+ interaction types | Form submit, button click, text input (datalist), number input, keyboard shortcut (N) |
 | Dynamic DOM | Full re-render on every state change, no `alert()` anywhere |
-| Reset | Inline confirmation flow clears state + localStorage |
+| Reset | Inline confirmation flow clears the active profile's saved tracking data |
 | No server/framework | Vanilla JS only, single HTML file, no CDN |
 
 ## Extensions included
@@ -52,7 +60,10 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 - **Dark mode toggle** — preference saved to localStorage
 - **Keyboard shortcut** — press N to jump to the log form
 - **Animations** — new set rows fade in
-- **Multiple views** — Log, PRs, History tabs
+- **Multiple views** — Log, PRs, History, and Progress tabs
+- **Data portability** — active-profile workout export as a CSV download
+- **Safe corrections** — edit entries and undo/redo deletions
+- **Offline-only coaching** — deterministic suggestions, no API calls or account required
 
 ---
 
