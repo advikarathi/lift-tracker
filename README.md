@@ -30,7 +30,7 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 
 ## How to use it
 
-1. Type an exercise name (or tap a quick-pick chip), enter weight/reps/sets, hit **Log set** (or press Enter)
+1. Choose an activity from the workout library dropdown or type your own, enter the relevant numbers, then hit **Log entry** (or press Enter)
 2. Watch your session build — PRs are badged automatically, deltas show vs. your last session
 3. Start a built-in or saved routine; after each entry, the next exercise pre-fills while you choose today's weight, reps, and sets
 4. Tap **PRs** to see your board and volume breakdown
@@ -54,6 +54,13 @@ Log sets (exercise, weight, reps, sets count) and the tool computes everything e
 | Dynamic DOM | Full re-render on every state change, no `alert()` anywhere |
 | Reset | Inline confirmation flow clears the active profile's saved tracking data |
 | No server/framework | Vanilla JS only, single HTML file, no CDN |
+
+## Deployment checklist
+
+- Separate public MP2 repo: `lift-tracker`
+- GitHub Pages live URL: <https://advikarathi.github.io/lift-tracker>
+- Add that live URL to the repo About box and check **Use your GitHub Pages website**
+- Link this repo from the `oim3690` README
 
 ## Extensions included
 

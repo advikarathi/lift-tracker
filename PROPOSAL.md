@@ -12,7 +12,7 @@ For me (Advika). I lift regularly combining weightlifting and Pilates, and I kee
 - Derived output: today's session, per-exercise PRs, strength volume, streak, last-session comparison, goal progress, and rule-based training guidance
 
 ## Core features
-1. Log strength, cardio, or bodyweight work with quick-picks and a built-in exercise library
+1. Log strength, cardio, bodyweight, Pilates, barre, yoga, or mobility work with a built-in exercise library dropdown
 2. Auto-detect PRs using the Epley estimated 1RM formula (weight × (1 + reps/30)) — badge the set if it's a new record
 3. Show today's session grouped by exercise, with a vs-last-session delta (+kg / −kg / same)
 4. PR board: every exercise ranked by best estimated 1RM, with date achieved
